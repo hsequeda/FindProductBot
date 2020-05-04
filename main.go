@@ -69,14 +69,22 @@ func main() {
 		logrus.Print("a", update)
 		switch {
 		case update.Message != nil:
-			err = InsertUser("892994806", "lh")
-			if err != nil {
-				logrus.Print(err)
+			if update.Message.Chat.Type == "private" {
+				if prov, ok := isProvince(update.Message.Text); ok {
+					err := InsertUser(strconv.Itoa(update.Message.From.ID), prov)
+					if err != nil {
+						logrus.Warn(err)
+						continue
+					}
+				}
+
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Seleccione su provincia:")
+				msg.ReplyMarkup = getProvKeyboard()
+				logrus.Println(bot.Send(msg))
+			} else {
+				logrus.Println(bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "No me gustan los grupos! 😠")))
 			}
-			_, err := bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Este bot no recibe mensajes 😠"))
-			if err != nil {
-				panic("implement me!")
-			}
+
 			break
 		case update.InlineQuery != nil:
 			if len(update.InlineQuery.Query) >= 2 {
@@ -86,36 +94,32 @@ func main() {
 					_, err := bot.AnswerInlineQuery(tgbotapi.InlineConfig{
 						InlineQueryID: update.InlineQuery.ID,
 						Results: []interface{}{
-							tgbotapi.NewInlineQueryResultArticleHTML("0", "Necesitas empezar una conversacion"+
-								" conmigo primero.", "Necesitas empezar una conversacion conmigo para poder"+
-								" usarme <a href=\"https://t.me/findTuEnvioBot\">Empezar conversacion.</a>"),
+							tgbotapi.NewInlineQueryResultArticleHTML(uuid.New().String(), "Necesitas empezar una"+
+								" conversacion conmigo primero.", "Necesitas empezar una conversacion "+
+								"conmigo para poder usarme <a href=\"https://t.me/findTuEnvioBot\">Empezar conversacion.</a>"),
 						},
 					})
 					if err != nil {
 						logrus.Print(err)
 						continue
 					}
+					break
 				case err != nil:
 					logrus.Print(err)
 					continue
 				default:
-					logrus.Println("Test")
 					var productList = make([]Product, 0)
-					for key, prov := range provinces {
-						if key == user.Province {
-							for _, store := range prov.stores {
-								products, err := GetProductsByPattern(store.rawName, update.InlineQuery.Query)
-								if err != nil {
-									logrus.Print(err)
-									continue
-								}
+					prov := provinces[user.Province]
+					for _, store := range prov.stores {
+						products, err := GetProductsByPattern(store.rawName, update.InlineQuery.Query)
+						if err != nil {
+							logrus.Print(err)
+							continue
+						}
 
-								for i := range products.Content {
-									products.Content[i].Store = store.name
-									productList = append(productList, products.Content[i])
-								}
-							}
-							break
+						for i := range products.Content {
+							products.Content[i].Store = store.name
+							productList = append(productList, products.Content[i])
 						}
 					}
 
@@ -183,4 +187,23 @@ func getQueryResultList(list []Product) ([]interface{}, error) {
 		resultList = append(resultList, inlineQueryResult)
 	}
 	return resultList, nil
+}
+
+func getProvKeyboard() tgbotapi.ReplyKeyboardMarkup {
+	keyboardList := make([][]tgbotapi.KeyboardButton, 0)
+	for _, prov := range provinces {
+		keyboardList = append(keyboardList, tgbotapi.NewKeyboardButtonRow(tgbotapi.NewKeyboardButton(prov.name)))
+	}
+
+	return tgbotapi.NewReplyKeyboard(keyboardList...)
+
+}
+
+func isProvince(text string) (string, bool) {
+	for key := range provinces {
+		if provinces[key].name == text {
+			return key, true
+		}
+	}
+	return "", false
 }
