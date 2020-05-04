@@ -11,6 +11,7 @@ type Product struct {
 	Name    string `css:".thumbTitle"`
 	Price   string `css:".thumbPrice"`
 	Picture string `css:".thumbnail img" extract:"attr" attr:"src"`
+	Link    string `css:".thumbnail a" extract:"attr" attr:"href"`
 	Store   string
 }
 
@@ -49,6 +50,10 @@ func GetProductsByPattern(store, pattern string) (*ProductList, error) {
 	err = html.NewDecoder(resp.Body).Decode(&list)
 	if err != nil {
 		return nil, err
+	}
+
+	for i := range list.Content {
+		list.Content[i].Link = fmt.Sprintf("%s/%s/%s", tuEnvioUrl, store, list.Content[i].Link)
 	}
 
 	return &list, err

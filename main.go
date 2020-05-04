@@ -176,12 +176,11 @@ func getQueryResultList(list []Product) ([]interface{}, error) {
 		<b>Producto: %s</b>,
 		<b>Precio: %s</b>,
 		<b>Tienda: %s</b>,
-		<a href="%s">&#8205;</a>,
-		`, strings.TrimSpace(prod.Name), strings.TrimSpace(prod.Price), strings.TrimSpace(prod.Store), strings.TrimSpace(prod.Picture))
+		<a href="%s">Enlace</a>,
+		`, strings.TrimSpace(prod.Name), strings.TrimSpace(prod.Price), strings.TrimSpace(prod.Store), strings.TrimSpace(prod.Link))
 
 		inlineQueryResult := tgbotapi.NewInlineQueryResultArticleHTML(uuid.New().String(), strings.TrimSpace(prod.Name), msg)
 		resultList = append(resultList, inlineQueryResult)
 	}
-	// resultList = append(resultList, tgbotapi.NewInlineQueryResultArticleHTML(uuid.New().String(), "title", "body"))
 	return resultList, nil
 }
