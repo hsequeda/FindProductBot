@@ -1,0 +1,49 @@
+# github.com/andybalholm/cascadia v1.1.0
+## explicit
+github.com/andybalholm/cascadia
+# github.com/boltdb/bolt v1.3.1
+## explicit
+github.com/boltdb/bolt
+# github.com/davecgh/go-spew v1.1.1
+github.com/davecgh/go-spew/spew
+# github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
+## explicit
+github.com/go-telegram-bot-api/telegram-bot-api
+# github.com/google/uuid v1.1.1
+## explicit
+github.com/google/uuid
+# github.com/konsorten/go-windows-terminal-sequences v1.0.3
+github.com/konsorten/go-windows-terminal-sequences
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
+# github.com/sirupsen/logrus v1.6.0
+## explicit
+github.com/sirupsen/logrus
+# github.com/snapcore/snapd v0.0.0-20200501181443-a4a2f8635587
+## explicit
+github.com/snapcore/snapd/osutil
+github.com/snapcore/snapd/osutil/sys
+github.com/snapcore/snapd/randutil
+github.com/snapcore/snapd/strutil
+# github.com/stretchr/testify v1.5.1
+## explicit
+github.com/stretchr/testify/assert
+github.com/stretchr/testify/require
+# github.com/technoweenie/multipartstreamer v1.0.1
+## explicit
+github.com/technoweenie/multipartstreamer
+# github.com/zlepper/encoding-html v0.0.0-20180504195128-87d140a8030c
+## explicit
+github.com/zlepper/encoding-html
+# golang.org/x/net v0.0.0-20200501053045-e0ff5e5a1de5
+## explicit
+golang.org/x/net/context
+golang.org/x/net/html
+golang.org/x/net/html/atom
+# golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd
+golang.org/x/sys/unix
+# gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637
+## explicit
+gopkg.in/tomb.v2
+# gopkg.in/yaml.v2 v2.2.2
+gopkg.in/yaml.v2
