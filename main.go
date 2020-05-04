@@ -76,6 +76,11 @@ func main() {
 						logrus.Warn(err)
 						continue
 					}
+					logrus.Println(bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf(
+						"Bien hecho!!\n Haz "+"seleccionado como provincia '%s'. Ahora las busquedas que me"+
+							" pidas las realizare en las tiendas que estan en esa provincia ☺", update.Message.Text))))
+					logrus.Println(bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Puedes cambiar de provincia"+
+						" cada vez que quieras como se muestra abajo ⬇")))
 				}
 
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Seleccione su provincia:")
