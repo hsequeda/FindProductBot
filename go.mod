@@ -9,6 +9,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/sirupsen/logrus v1.6.0
 	github.com/snapcore/snapd v0.0.0-20200501181443-a4a2f8635587
+	github.com/spf13/viper v1.6.3
 	github.com/stretchr/testify v1.5.1
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	github.com/zlepper/encoding-html v0.0.0-20180504195128-87d140a8030c

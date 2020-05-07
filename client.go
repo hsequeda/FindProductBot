@@ -1,35 +1,17 @@
 package main
 
 import (
-	"crypto/tls"
 	"findTuEnvioBot/products"
 	"fmt"
 	html "github.com/zlepper/encoding-html"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
-	"sync"
 )
 
 const tuEnvioUrl = "https://www.tuenvio.cu"
 const quintaY42 = "http://5tay42.xetid.cu"
-
-var client *http.Client
-var once sync.Once
-
-func NewClient() *http.Client {
-	once.Do(func() {
-		client = &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: true,
-				},
-			},
-		}
-	})
-
-	return client
-}
 
 /*
  GetProductsByPattern return a Product list by a store and a pattern.
@@ -46,13 +28,12 @@ func NewClient() *http.Client {
 		fmt.Printf("%#v \n", product)
 	}
 */
-func GetProductsByPattern(store, pattern string) (result []products.Product, err error) {
-	_ = NewClient()
+func (m MyBot) GetProductsByPattern(store, pattern string) (result []products.Product, err error) {
 	req, err := getRequest(store, pattern)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := client.Do(req)
+	resp, err := m.client.CallRetryable(req)
 	if err != nil {
 		return nil, err
 	}
@@ -64,12 +45,12 @@ func GetProductsByPattern(store, pattern string) (result []products.Product, err
 	}
 }
 
-func decodeProduct5tay42(response *http.Response) ([]products.Product, error) {
+func decodeProduct5tay42(body io.ReadCloser) ([]products.Product, error) {
 	var list struct {
 		Content []products.QuintaY42Product `css:"#listado-prod li"`
 	}
 
-	err := html.NewDecoder(response.Body).Decode(&list)
+	err := html.NewDecoder(body).Decode(&list)
 	if err != nil {
 		return nil, err
 	}
@@ -86,12 +67,12 @@ func decodeProduct5tay42(response *http.Response) ([]products.Product, error) {
 	return productList, nil
 }
 
-func decodeProductTuEnvio(response *http.Response, store string) ([]products.Product, error) {
+func decodeProductTuEnvio(body io.ReadCloser, store string) ([]products.Product, error) {
 	var list struct {
 		Content []products.TuEnvioProduct `css:".hProductItems .clearfix"`
 	}
 
-	err := html.NewDecoder(response.Body).Decode(&list)
+	err := html.NewDecoder(body).Decode(&list)
 	if err != nil {
 		return nil, err
 	}

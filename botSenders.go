@@ -8,7 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func sendInlineKeyboardSelectProvince(chatId int64) {
+func (m MyBot) sendInlineKeyboardSelectProvince(chatId int64) {
 	msg := tgbotapi.NewMessage(chatId, "Seleccione una provincia:")
 
 	var markup = tgbotapi.NewInlineKeyboardMarkup(
@@ -45,14 +45,14 @@ func sendInlineKeyboardSelectProvince(chatId int64) {
 		),
 	)
 	msg.ReplyMarkup = markup
-	_, err := bot.Send(msg)
+	_, err := m.bot.Send(msg)
 
 	if err != nil {
 		logrus.Warn(err)
 	}
 }
 
-func sendUserPanel(chatId int64, text string) {
+func (m MyBot) sendUserPanel(chatId int64, text string) {
 	msg := tgbotapi.NewMessage(chatId, text)
 	replyKeyboard := tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
@@ -68,13 +68,13 @@ func sendUserPanel(chatId int64, text string) {
 	)
 	msg.ParseMode = "html"
 	msg.ReplyMarkup = replyKeyboard
-	_, err := bot.Send(msg)
+	_, err := m.bot.Send(msg)
 	if err != nil {
 		logrus.Warn(err)
 	}
 }
 
-func sendQueryResultList(list []products.Product, inlineQueryID string) {
+func (m MyBot) sendQueryResultList(list []products.Product, inlineQueryID string) {
 	var resultList = make([]interface{}, 0)
 
 	for _, prod := range list {
@@ -92,7 +92,7 @@ func sendQueryResultList(list []products.Product, inlineQueryID string) {
 		resultList = append(resultList, inlineQueryResult)
 	}
 
-	_, err := bot.AnswerInlineQuery(tgbotapi.InlineConfig{
+	_, err := m.bot.AnswerInlineQuery(tgbotapi.InlineConfig{
 		InlineQueryID: inlineQueryID,
 		Results:       resultList,
 		CacheTime:     10000,

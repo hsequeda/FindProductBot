@@ -10,8 +10,8 @@ import (
 	"strings"
 )
 
-func handleCallBackQuery(query *tgbotapi.CallbackQuery) {
-	_, err := bot.AnswerCallbackQuery(tgbotapi.NewCallback(query.ID, query.Data))
+func (m MyBot) handleCallBackQuery(query *tgbotapi.CallbackQuery) {
+	_, err := m.bot.AnswerCallbackQuery(tgbotapi.NewCallback(query.ID, query.Data))
 	if err != nil {
 		logrus.Warn(err)
 	}
@@ -20,14 +20,14 @@ func handleCallBackQuery(query *tgbotapi.CallbackQuery) {
 		storeList = append(storeList, store.name)
 	}
 	msg := fmt.Sprintf("<b>Ha seleccionado %s:</b>\n <b>Tiendas:</b>\n %s", query.Data, strings.Join(storeList, "\n"))
-	sendUserPanel(query.Message.Chat.ID, msg)
+	m.sendUserPanel(query.Message.Chat.ID, msg)
 
 	err = InsertUser(strconv.FormatInt(query.Message.Chat.ID, 10), query.Data)
 	if err != nil {
 		logrus.Warn(err)
 	}
 
-	_, err = bot.DeleteMessage(tgbotapi.DeleteMessageConfig{
+	_, err = m.bot.DeleteMessage(tgbotapi.DeleteMessageConfig{
 		ChatID:    query.Message.Chat.ID,
 		MessageID: query.Message.MessageID,
 	})
@@ -36,7 +36,7 @@ func handleCallBackQuery(query *tgbotapi.CallbackQuery) {
 	}
 }
 
-func handlePublicMessage(message *tgbotapi.Message) {
+func (m MyBot) handlePublicMessage(message *tgbotapi.Message) {
 	switch {
 	case message.Text == "/help":
 		// Send instructions
@@ -78,7 +78,7 @@ func handlePublicMessage(message *tgbotapi.Message) {
 	}
 }
 
-func handlePrivateMessage(privateMsg *tgbotapi.Message) {
+func (m MyBot) handlePrivateMessage(privateMsg *tgbotapi.Message) {
 	if privateMsg.IsCommand() {
 		switch {
 		case privateMsg.Text == "/help":
@@ -128,69 +128,69 @@ func handlePrivateMessage(privateMsg *tgbotapi.Message) {
 			sendInsertCommandValidError(privateMsg.Chat.ID)
 			sendInstructions(privateMsg.Chat.ID)
 		}
-	} else {
-		switch privateMsg.Text {
-		case "🆘 Help":
-			// Send instuctions
-			sendInstructions(privateMsg.Chat.ID)
-		case "🗺 Seleccionar Provincia":
-			// Send province list
-			sendInlineKeyboardSelectProvince(privateMsg.Chat.ID)
+		return
+	}
+	switch privateMsg.Text {
+	case "🆘 Help":
+		// Send instuctions
+		m.sendInstructions(privateMsg.Chat.ID)
+	case "🗺 Seleccionar Provincia":
+		// Send province list
+		m.sendInlineKeyboardSelectProvince(privateMsg.Chat.ID)
+		break
+	case "📋 Adicionar subscripcion":
+		m.bot.Send(tgbotapi.NewMessage(privateMsg.Chat.ID, "For implement"))
+	// Add subscription
+	case "👤 Mi Perfil":
+		user, err := GetUser(strconv.FormatInt(privateMsg.Chat.ID, 10))
+		switch {
+		case err == errValEmpty || err == errBucketEmpty:
+			m.sendInlineKeyboardSelectProvince(privateMsg.Chat.ID)
 			break
-		case "📋 Adicionar subscripcion":
-			bot.Send(tgbotapi.NewMessage(privateMsg.Chat.ID, "For implement"))
-		// Add subscription
-		case "👤 Mi Perfil":
-			user, err := GetUser(strconv.FormatInt(privateMsg.Chat.ID, 10))
-			switch {
-			case err == errValEmpty || err == errBucketEmpty:
-				sendInlineKeyboardSelectProvince(privateMsg.Chat.ID)
-				break
-			case err != nil:
-				logrus.Warn(err)
-				break
-			default:
-				msg := tgbotapi.NewMessage(privateMsg.Chat.ID, fmt.Sprintf(
-					"👤 <b>Usuario:</b> %s,\n 🗺 <b>Provincia:</b> %s", privateMsg.From.FirstName, user.Province))
-				msg.ParseMode = "html"
-				_, err := bot.Send(msg)
-				if err != nil {
-					logrus.Warn(err)
-					break
-				}
-			}
+		case err != nil:
+			logrus.Warn(err)
+			break
 		default:
-			// Search Product
-			user, err := GetUser(strconv.Itoa(privateMsg.From.ID))
-			switch {
-			case err == errValEmpty || err == errBucketEmpty:
-				sendProvinceNotSelectError(privateMsg.Chat.ID)
-				break
-			case err != nil:
+			msg := tgbotapi.NewMessage(privateMsg.Chat.ID, fmt.Sprintf(
+				"👤 <b>Usuario:</b> %s,\n 🗺 <b>Provincia:</b> %s", privateMsg.From.FirstName, user.Province))
+			msg.ParseMode = "html"
+			_, err := bot.Send(msg)
+			if err != nil {
 				logrus.Warn(err)
-				return
-			default:
-				for _, store := range provinces[user.Province] {
-					prods, err := GetProductsByPattern(store.rawName, privateMsg.Text)
-					if err != nil {
-						logrus.Print(err)
-					}
+				break
+			}
+		}
+	default:
+		// Search Product
+		user, err := GetUser(strconv.Itoa(privateMsg.From.ID))
+		switch {
+		case err == errValEmpty || err == errBucketEmpty:
+			m.sendProvinceNotSelectError(privateMsg.Chat.ID)
+			break
+		case err != nil:
+			logrus.Warn(err)
+			return
+		default:
+			for _, store := range provinces[user.Province] {
+				prods, err := GetProductsByPattern(store.rawName, privateMsg.Text)
+				if err != nil {
+					logrus.Print(err)
+				}
 
-					if prods != nil {
-						sendResultMessage(privateMsg.Chat.ID, prods)
-					}
+				if prods != nil {
+					sendResultMessage(privateMsg.Chat.ID, prods)
 				}
 			}
 		}
 	}
 }
 
-func handleInlineQuery(query *tgbotapi.InlineQuery) {
+func (m MyBot) handleInlineQuery(query *tgbotapi.InlineQuery) {
 	if len(query.Query) >= 2 {
 		user, err := GetUser(strconv.Itoa(query.From.ID))
 		switch {
 		case err == errValEmpty || err == errBucketEmpty:
-			_, err := bot.AnswerInlineQuery(tgbotapi.InlineConfig{
+			_, err := m.bot.AnswerInlineQuery(tgbotapi.InlineConfig{
 				InlineQueryID: query.ID,
 				Results: []interface{}{
 					tgbotapi.NewInlineQueryResultArticleHTML(uuid.New().String(), "Necesitas empezar una"+
@@ -210,14 +210,14 @@ func handleInlineQuery(query *tgbotapi.InlineQuery) {
 
 			var productList = make([]products.Product, 0)
 			for _, store := range provinces[user.Province] {
-				prods, err := GetProductsByPattern(store.rawName, query.Query)
+				prods, err := m.GetProductsByPattern(store.rawName, query.Query)
 				if err != nil {
 					logrus.Print(err)
 				}
 
 				productList = append(productList, prods...)
 			}
-			sendQueryResultList(productList, query.ID)
+			m.sendQueryResultList(productList, query.ID)
 		}
 	}
 }
