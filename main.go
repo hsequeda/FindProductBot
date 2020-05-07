@@ -62,6 +62,7 @@ func main() {
 	}
 
 	for update := range updateCh {
+		logrus.Println(update)
 		switch {
 		case update.CallbackQuery != nil:
 			handleCallBackQuery(update.CallbackQuery)

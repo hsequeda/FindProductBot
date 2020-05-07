@@ -15,7 +15,12 @@ func handleCallBackQuery(query *tgbotapi.CallbackQuery) {
 	if err != nil {
 		logrus.Warn(err)
 	}
-	sendUserPanel(query.Message.Chat.ID, fmt.Sprintf("Ha seleccionado %s", query.Data))
+	var storeList []string
+	for _, store := range provinces[query.Data] {
+		storeList = append(storeList, store.name)
+	}
+	msg := fmt.Sprintf("<b>Ha seleccionado %s:</b>\n <b>Tiendas:</b>\n %s", query.Data, strings.Join(storeList, "\n"))
+	sendUserPanel(query.Message.Chat.ID, msg)
 
 	err = InsertUser(strconv.FormatInt(query.Message.Chat.ID, 10), query.Data)
 	if err != nil {
@@ -32,34 +37,150 @@ func handleCallBackQuery(query *tgbotapi.CallbackQuery) {
 }
 
 func handlePublicMessage(message *tgbotapi.Message) {
+	switch {
+	case message.Text == "/help":
+		// Send instructions
+		bot.Send(tgbotapi.NewMessage(message.Chat.ID, "For implement"))
 
+	case strings.Split(message.Text, " ")[0] == "/buscar":
+		// Search product
+		user, err := GetUser(strconv.Itoa(message.From.ID))
+		switch {
+		case err == errValEmpty || err == errBucketEmpty:
+			sendProvinceNotSelectError(message.Chat.ID)
+			break
+		case err != nil:
+			logrus.Warn(err)
+			return
+		default:
+			var pattern string
+			splitText := strings.Split(message.Text, " ")
+			if len(splitText) >= 1 {
+				pattern = strings.Join(splitText[1:], " ")
+			}
+
+			for _, store := range provinces[user.Province] {
+				prods, err := GetProductsByPattern(store.rawName, pattern)
+				if err != nil {
+					logrus.Print(err)
+				}
+
+				if prods != nil {
+					sendResultMessage(message.Chat.ID, prods)
+				}
+			}
+		}
+
+	case strings.Split(message.Text, " ")[0] == "/subscribirme":
+		// Buscar
+	default:
+		// inserte un comando valido
+	}
 }
 
 func handlePrivateMessage(privateMsg *tgbotapi.Message) {
 	if privateMsg.IsCommand() {
 		switch {
-		case privateMsg.Text == "/start", privateMsg.Text == "/help":
+		case privateMsg.Text == "/help":
+			sendInstructions(privateMsg.Chat.ID)
 			// Send instructions
+		case strings.Split(privateMsg.Text, " ")[0] == "/start":
+			if len(strings.Split(privateMsg.Text, " ")) >= 2 {
+				if strings.Split(privateMsg.Text, " ")[1] == "start" {
+					sendInlineKeyboardSelectProvince(privateMsg.Chat.ID)
+				}
+			}
+
+			// Send instructions
+			sendUserPanel(privateMsg.Chat.ID, "Seleccione la opcion que desee realizar:")
 		case strings.Split(privateMsg.Text, " ")[0] == "/buscar":
-			// Buscar
+			// Search Product
+			user, err := GetUser(strconv.Itoa(privateMsg.From.ID))
+			switch {
+			case err == errValEmpty || err == errBucketEmpty:
+				sendProvinceNotSelectError(privateMsg.Chat.ID)
+				break
+			case err != nil:
+				logrus.Warn(err)
+				return
+			default:
+				var pattern string
+				splitText := strings.Split(privateMsg.Text, " ")
+				if len(splitText) >= 1 {
+					pattern = strings.Join(splitText[1:], " ")
+				}
+
+				for _, store := range provinces[user.Province] {
+					prods, err := GetProductsByPattern(store.rawName, pattern)
+					if err != nil {
+						logrus.Print(err)
+					}
+
+					if prods != nil {
+						sendResultMessage(privateMsg.Chat.ID, prods)
+					}
+				}
+			}
+
 		case strings.Split(privateMsg.Text, " ")[0] == "/subscribirme":
-			// Buscar
+			// Subscribe
 		default:
-			// inserte un comando valido
+			sendInsertCommandValidError(privateMsg.Chat.ID)
+			sendInstructions(privateMsg.Chat.ID)
 		}
 	} else {
 		switch privateMsg.Text {
 		case "🆘 Help":
-		// Send instuctions
+			// Send instuctions
+			sendInstructions(privateMsg.Chat.ID)
 		case "🗺 Seleccionar Provincia":
 			// Send province list
 			sendInlineKeyboardSelectProvince(privateMsg.Chat.ID)
 			break
 		case "📋 Adicionar subscripcion":
+			bot.Send(tgbotapi.NewMessage(privateMsg.Chat.ID, "For implement"))
 		// Add subscription
 		case "👤 Mi Perfil":
+			user, err := GetUser(strconv.FormatInt(privateMsg.Chat.ID, 10))
+			switch {
+			case err == errValEmpty || err == errBucketEmpty:
+				sendInlineKeyboardSelectProvince(privateMsg.Chat.ID)
+				break
+			case err != nil:
+				logrus.Warn(err)
+				break
+			default:
+				msg := tgbotapi.NewMessage(privateMsg.Chat.ID, fmt.Sprintf(
+					"👤 <b>Usuario:</b> %s,\n 🗺 <b>Provincia:</b> %s", privateMsg.From.FirstName, user.Province))
+				msg.ParseMode = "html"
+				_, err := bot.Send(msg)
+				if err != nil {
+					logrus.Warn(err)
+					break
+				}
+			}
 		default:
-			// Insert a valid message
+			// Search Product
+			user, err := GetUser(strconv.Itoa(privateMsg.From.ID))
+			switch {
+			case err == errValEmpty || err == errBucketEmpty:
+				sendProvinceNotSelectError(privateMsg.Chat.ID)
+				break
+			case err != nil:
+				logrus.Warn(err)
+				return
+			default:
+				for _, store := range provinces[user.Province] {
+					prods, err := GetProductsByPattern(store.rawName, privateMsg.Text)
+					if err != nil {
+						logrus.Print(err)
+					}
+
+					if prods != nil {
+						sendResultMessage(privateMsg.Chat.ID, prods)
+					}
+				}
+			}
 		}
 	}
 }
@@ -74,9 +195,10 @@ func handleInlineQuery(query *tgbotapi.InlineQuery) {
 				Results: []interface{}{
 					tgbotapi.NewInlineQueryResultArticleHTML(uuid.New().String(), "Necesitas empezar una"+
 						" conversacion conmigo primero.", "Necesitas empezar una conversacion "+
-						"conmigo para poder usarme <a href=\"https://t.me/buscarTuEnvioBot\">Empezar conversacion.</a>"),
+						"conmigo para que me digas tu provincia <a href=\"https://t.me/buscarTuEnvioBot?start=start\">Empezar conversacion.</a>"),
 				},
 			})
+
 			if err != nil {
 				logrus.Warn(err)
 			}

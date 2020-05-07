@@ -96,7 +96,8 @@ func dbRead(key string) ([]byte, error) {
 		result := b.Get([]byte(key))
 		val = make([]byte, len(result))
 		copy(val, result)
-		if val == nil {
+
+		if len(val) == 0 {
 			return errValEmpty
 		}
 

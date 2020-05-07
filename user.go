@@ -148,7 +148,7 @@ func GetUser(id string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	logrus.Info("find ", string(bb))
+
 	if err = json.Unmarshal(bb, &u); err != nil {
 		return nil, err
 	}
