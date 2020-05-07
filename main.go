@@ -61,8 +61,7 @@ func initBot(conf config) MyBot {
 	logrus.Print(u)
 
 	bot.Debug = true
-	mBot := MyBot{bot: bot, client: httpClient.NewClient()}
-
+	mBot := MyBot{bot: bot, client: httpClient.NewClient(), botName: conf.BotName}
 	if conf.WebHook.Domain == "" {
 		return mBot
 	}
@@ -92,7 +91,6 @@ func initBot(conf config) MyBot {
 		logrus.Printf("[Telegram callback failed]%s", info.LastErrorMessage)
 	}
 
-	mBot.botName = conf.BotName
 	return mBot
 }
 
