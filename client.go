@@ -5,6 +5,7 @@ import (
 	html "github.com/zlepper/encoding-html"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 type Product struct {
@@ -41,7 +42,20 @@ func GetProductsByPattern(store, pattern string) (*ProductList, error) {
 		return nil, err
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	tr := &http.Transport{
+		Proxy:                 http.ProxyFromEnvironment,
+		MaxIdleConnsPerHost:   256,
+		IdleConnTimeout:       60 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 10 * time.Second,
+		// Go net/http automatically unzip if content-type is
+		// gzip disable this feature, as we are always interested
+		// in raw stream.
+		DisableCompression: true,
+	}
+	client := &http.Client{Transport: tr}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
