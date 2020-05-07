@@ -193,9 +193,11 @@ func (m MyBot) handleInlineQuery(query *tgbotapi.InlineQuery) {
 			_, err := m.bot.AnswerInlineQuery(tgbotapi.InlineConfig{
 				InlineQueryID: query.ID,
 				Results: []interface{}{
-					tgbotapi.NewInlineQueryResultArticleHTML(uuid.New().String(), "Necesitas empezar una"+
-						" conversacion conmigo primero.", "Necesitas empezar una conversacion "+
-						"conmigo para que me digas tu provincia <a href=\"https://t.me/buscarTuEnvioBot?start=start\">Empezar conversacion.</a>"),
+					tgbotapi.NewInlineQueryResultArticleHTML(uuid.New().String(),
+						"Necesitas empezar una conversacion conmigo primero.",
+						fmt.Sprintf("Necesitas empezar una conversacion "+
+							"conmigo para que me digas tu provincia"+
+							" <a href=\"https://t.me/%s?start=start\">Empezar conversacion.</a>", m.botName)),
 				},
 			})
 
