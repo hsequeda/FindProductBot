@@ -15,127 +15,114 @@ type store struct {
 	rawName string
 }
 
-type province struct {
-	name   string
-	stores []store
-}
-
-var provinces = map[string]province{
-	"pr": {
-		name: "Pinar del Rio",
-		stores: []store{{
+var provinces = map[string][]store{
+	"Pinar del Rio": {
+		{
 			name:    "Pinar del Rio",
 			rawName: "pinar",
-		}},
+		},
 	},
-	"ar": {
-		name: "Artemisa",
-		stores: []store{{
+	"Artemisa": {
+		{
 			name:    "Artemisa",
 			rawName: "artemisa",
-		}},
+		},
 	},
-	"my": {
-		name: "Mayabeque",
-		stores: []store{{
+	"Mayabeque": {
+		{
 			name:    "Mayabeque",
 			rawName: "mayabeque-tv",
-		}},
+		},
 	},
-	"mt": {
-		name: "Matanzas",
-		stores: []store{{
+	"Matanzas": {
+		{
 			name:    "Matanzas",
 			rawName: "matanzas",
-		}},
+		},
 	},
-	"cf": {
-		name: "Cienfuegos",
-		stores: []store{{
+	"Cienfuegos": {
+		{
 			name:    "Cienfuegos",
 			rawName: "cienfuegos",
-		}},
+		},
 	},
-	"vc": {
-		name: "Villa Clara",
-		stores: []store{{
+	"Villa Clara": {
+		{
 			name:    "Villa Clara",
 			rawName: "villaclara",
-		}},
+		},
 	},
-	"ss": {
-		name: "Sancti Spiritus",
-		stores: []store{{
+	"Sancti Spiritus": {
+		{
 			name:    "Sancti Spiritus",
 			rawName: "sancti",
-		}},
+		},
 	},
-	"ca": {
-		name: "Ciego de Avila",
-		stores: []store{{
+	"Ciego de Avila": {
+		{
 			name:    "Ciego de Avila",
 			rawName: "ciego",
-		}},
+		},
 	},
-	"cm": {
-		name: "Camaguey",
-		stores: []store{{
+	"Camaguey": {
+		{
 			name:    "Camaguey",
 			rawName: "camaguey",
-		}},
+		},
 	},
-	"lt": {
-		name: "Las Tunas",
-		stores: []store{{
+	"Las Tunas": {
+		{
 			name:    "Las Tunas",
 			rawName: "tunas",
-		}},
+		},
 	},
-	"hg": {
-		name: "Holguin",
-		stores: []store{{
+	"Holguin": {
+		{
 			name:    "Holguin",
 			rawName: "holguin",
-		}},
+		},
 	},
-	"gr": {
-		name: "Granma",
-		stores: []store{{
+	"Granma": {
+		{
 			name:    "Granma",
 			rawName: "granma",
-		}},
+		},
 	},
-	"st": {
-		name: "Santiago de Cuba",
-		stores: []store{{
+	"Santiago de Cuba": {
+		{
 			name:    "Santiago de Cuba",
 			rawName: "santiago",
-		}},
+		},
 	},
-	"gt": {
-		name: "Guantanamo",
-		stores: []store{{
+	"Guantanamo": {
+		{
 			name:    "Guantanamo",
 			rawName: "guantanamo",
-		}},
+		},
 	},
-	"ij": {
-		name: "La Isla",
-		stores: []store{{
+	"La Isla": {
+		{
 			name:    "La Isla",
 			rawName: "isla",
-		}},
+		},
 	},
-	"lh": {
-		name: "La Habana",
-		stores: []store{{
+	"La Habana": {
+		{
 			name:    "Carlos III",
 			rawName: "carlos3",
 		}, {
 			name:    "Cuatro Caminos",
 			rawName: "4caminos",
+		}, {
+			name:    "5ta y 42",
+			rawName: "5taY42",
+		}, {
+			name:    "Pedregal",
+			rawName: "tvpedregal",
+		}, {
+			name:    "Villa Diana",
+			rawName: "caribehabana",
 		}},
-	},
 }
 
 func InsertUser(id, province string) error {
@@ -161,7 +148,7 @@ func GetUser(id string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	logrus.Info("find ",string(bb))
+	logrus.Info("find ", string(bb))
 	if err = json.Unmarshal(bb, &u); err != nil {
 		return nil, err
 	}
