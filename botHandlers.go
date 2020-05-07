@@ -10,19 +10,19 @@ import (
 	"strings"
 )
 
-func handleCallBackQuery(query *tgbotapi.CallbackQuery) {
-	_, err := bot.AnswerCallbackQuery(tgbotapi.NewCallback(query.ID, query.Data))
+func (m MyBot) handleCallBackQuery(query *tgbotapi.CallbackQuery) {
+	_, err := m.bot.AnswerCallbackQuery(tgbotapi.NewCallback(query.ID, query.Data))
 	if err != nil {
 		logrus.Warn(err)
 	}
-	sendUserPanel(query.Message.Chat.ID, fmt.Sprintf("Ha seleccionado %s", query.Data))
+	m.sendUserPanel(query.Message.Chat.ID, fmt.Sprintf("Ha seleccionado %s", query.Data))
 
 	err = InsertUser(strconv.FormatInt(query.Message.Chat.ID, 10), query.Data)
 	if err != nil {
 		logrus.Warn(err)
 	}
 
-	_, err = bot.DeleteMessage(tgbotapi.DeleteMessageConfig{
+	_, err = m.bot.DeleteMessage(tgbotapi.DeleteMessageConfig{
 		ChatID:    query.Message.Chat.ID,
 		MessageID: query.Message.MessageID,
 	})
@@ -31,11 +31,11 @@ func handleCallBackQuery(query *tgbotapi.CallbackQuery) {
 	}
 }
 
-func handlePublicMessage(message *tgbotapi.Message) {
+func (m MyBot) handlePublicMessage(message *tgbotapi.Message) {
 
 }
 
-func handlePrivateMessage(privateMsg *tgbotapi.Message) {
+func (m MyBot) handlePrivateMessage(privateMsg *tgbotapi.Message) {
 	if privateMsg.IsCommand() {
 		switch {
 		case privateMsg.Text == "/start", privateMsg.Text == "/help":
@@ -47,29 +47,30 @@ func handlePrivateMessage(privateMsg *tgbotapi.Message) {
 		default:
 			// inserte un comando valido
 		}
-	} else {
-		switch privateMsg.Text {
-		case "🆘 Help":
-		// Send instuctions
-		case "🗺 Seleccionar Provincia":
-			// Send province list
-			sendInlineKeyboardSelectProvince(privateMsg.Chat.ID)
-			break
-		case "📋 Adicionar subscripcion":
-		// Add subscription
-		case "👤 Mi Perfil":
-		default:
-			// Insert a valid message
-		}
+		return
+	}
+
+	switch privateMsg.Text {
+	case "🆘 Help":
+	// Send instuctions
+	case "🗺 Seleccionar Provincia":
+		// Send province list
+		m.sendInlineKeyboardSelectProvince(privateMsg.Chat.ID)
+		break
+	case "📋 Adicionar subscripcion":
+	// Add subscription
+	case "👤 Mi Perfil":
+	default:
+		// Insert a valid message
 	}
 }
 
-func handleInlineQuery(query *tgbotapi.InlineQuery) {
+func (m MyBot) handleInlineQuery(query *tgbotapi.InlineQuery) {
 	if len(query.Query) >= 2 {
 		user, err := GetUser(strconv.Itoa(query.From.ID))
 		switch {
 		case err == errValEmpty || err == errBucketEmpty:
-			_, err := bot.AnswerInlineQuery(tgbotapi.InlineConfig{
+			_, err := m.bot.AnswerInlineQuery(tgbotapi.InlineConfig{
 				InlineQueryID: query.ID,
 				Results: []interface{}{
 					tgbotapi.NewInlineQueryResultArticleHTML(uuid.New().String(), "Necesitas empezar una"+
@@ -88,14 +89,14 @@ func handleInlineQuery(query *tgbotapi.InlineQuery) {
 
 			var productList = make([]products.Product, 0)
 			for _, store := range provinces[user.Province] {
-				prods, err := GetProductsByPattern(store.rawName, query.Query)
+				prods, err := m.GetProductsByPattern(store.rawName, query.Query)
 				if err != nil {
 					logrus.Print(err)
 				}
 
 				productList = append(productList, prods...)
 			}
-			sendQueryResultList(productList, query.ID)
+			m.sendQueryResultList(productList, query.ID)
 		}
 	}
 }

@@ -2,49 +2,37 @@ package main
 
 import (
 	"github.com/sirupsen/logrus"
-	"os"
-	"strconv"
-)
-
-const (
-	token    = "TOKEN"
-	domain   = "DOMAIN"
-	path     = "PATH"
-	port     = "PORT"
-	withCert = "WITH_CERT"
-	certPath = "CERT_PATH"
-	keyPath  = "KEY_PATH"
+	"github.com/spf13/viper"
 )
 
 type webHookData struct {
-	domain   string
-	path     string
-	port     string
-	withCert bool
-	certPath string
-	keyPath  string
+	Domain   string
+	Path     string
+	Port     string
+	WithCert bool
+	CertPath string
+	KeyPath  string
 }
 
 type config struct {
-	botToken string
-	webHook  webHookData
+	BotToken string
+	WebHook  webHookData
 }
 
-var conf config
-
-func initConfig() {
-	conf.webHook = webHookData{}
-	var err error
-
-	conf.botToken = os.Getenv(token)
-	conf.webHook.withCert = false
-	conf.webHook.domain = os.Getenv(domain)
-	conf.webHook.path = os.Getenv(path)
-	conf.webHook.certPath = os.Getenv(certPath)
-	conf.webHook.keyPath = os.Getenv(keyPath)
-	conf.webHook.port = os.Getenv(port)
-	conf.webHook.withCert, err = strconv.ParseBool(os.Getenv(withCert))
-	if err != nil {
-		logrus.Warn(err)
+func initConfig() (config, error) {
+	viper.SetConfigName("config")            // name of config file
+	viper.SetConfigType("yaml")              // REQUIRED if the config file does not have the extension in the name
+	viper.AddConfigPath("/etc/tuenviobot/")  // path to look for the config file in
+	viper.AddConfigPath("$HOME/.tuenviobot") // call multiple times to add many search paths
+	viper.AddConfigPath(".")                 // optionally look for config in the working directory
+	err := viper.ReadInConfig()              // Find and read the config file
+	if err != nil {                          // Handle errors reading the config file
+		logrus.Errorf("Fatal error config file: %s \n", err)
 	}
+	var c config
+	if err := viper.Unmarshal(&c); err != nil {
+		logrus.Errorf("unable to decode config into struct, %v", err)
+		return config{}, err
+	}
+	return c, nil
 }

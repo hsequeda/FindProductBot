@@ -1,18 +1,53 @@
 package main
 
 import (
+	httpClient "findTuEnvioBot/client"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
-var bot *tgbotapi.BotAPI
+type MyBot struct {
+	bot    *tgbotapi.BotAPI
+	client *httpClient.Client
+}
 
-func init() {
-	var err error
-	initConfig()
+func main() {
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	conf, err := initConfig()
+	if err != nil {
+		logrus.Fatalln(err)
+		return
+	}
+	logrus.Println("Starting bot..")
+	mBot := initBot(conf)
 
-	bot, err = tgbotapi.NewBotAPI(conf.botToken)
+	updateCh, errCh := mBot.getUpdateCh(conf)
+	if errCh != nil {
+		logrus.Fatal(errCh)
+	}
+
+	for update := range updateCh {
+		switch {
+		case update.CallbackQuery != nil:
+			mBot.handleCallBackQuery(update.CallbackQuery)
+
+		case update.Message != nil:
+			if update.Message.Chat.Type == "private" {
+				mBot.handlePrivateMessage(update.Message)
+			} else {
+				mBot.handlePublicMessage(update.Message)
+			}
+
+			break
+		case update.InlineQuery != nil:
+			mBot.handleInlineQuery(update.InlineQuery)
+		}
+	}
+}
+
+func initBot(conf config) MyBot {
+	bot, err := tgbotapi.NewBotAPI(conf.BotToken)
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -25,83 +60,60 @@ func init() {
 	logrus.Print(u)
 
 	bot.Debug = true
+	mBot := MyBot{bot: bot, client: httpClient.NewClient()}
 
-	if conf.webHook.domain != "" {
-		if conf.webHook.withCert {
-			_, err = bot.SetWebhook(tgbotapi.NewWebhookWithCert(conf.webHook.domain, conf.webHook.certPath))
-			if err != nil {
-				logrus.Fatal(err)
-			}
+	if conf.WebHook.Domain == "" {
+		return mBot
+	}
 
-			go raiseServer(true)
-		} else {
-			_, err = bot.SetWebhook(tgbotapi.NewWebhook(conf.webHook.domain))
-			if err != nil {
-				logrus.Fatal(err)
-			}
-
-			go raiseServer(true)
-		}
-
-		info, err := bot.GetWebhookInfo()
+	if conf.WebHook.WithCert {
+		_, err = bot.SetWebhook(tgbotapi.NewWebhookWithCert(conf.WebHook.Domain, conf.WebHook.CertPath))
 		if err != nil {
 			logrus.Fatal(err)
 		}
 
-		if info.LastErrorDate != 0 {
-			logrus.Printf("[Telegram callback failed]%s", info.LastErrorMessage)
+		go raiseServer(conf)
+	} else {
+		_, err = bot.SetWebhook(tgbotapi.NewWebhook(conf.WebHook.Domain))
+		if err != nil {
+			logrus.Fatal(err)
 		}
-	}
-}
 
-func main() {
-	logrus.Println("Starting bot..")
-	updateCh, err := getUpdateCh()
+		go raiseServer(conf)
+	}
+
+	info, err := bot.GetWebhookInfo()
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
-	for update := range updateCh {
-		switch {
-		case update.CallbackQuery != nil:
-			handleCallBackQuery(update.CallbackQuery)
-
-		case update.Message != nil:
-			if update.Message.Chat.Type == "private" {
-				handlePrivateMessage(update.Message)
-			} else {
-				handlePublicMessage(update.Message)
-			}
-
-			break
-		case update.InlineQuery != nil:
-			handleInlineQuery(update.InlineQuery)
-		}
+	if info.LastErrorDate != 0 {
+		logrus.Printf("[Telegram callback failed]%s", info.LastErrorMessage)
 	}
+	return mBot
 }
 
-func raiseServer(withCert bool) {
+func raiseServer(conf config) {
 	logrus.Println("Server Started")
-	if withCert {
-		err := http.ListenAndServeTLS("0.0.0.0:"+conf.webHook.port, conf.webHook.certPath, conf.webHook.keyPath, nil)
+	if conf.WebHook.WithCert {
+		err := http.ListenAndServeTLS("0.0.0.0:"+conf.WebHook.Port, conf.WebHook.CertPath, conf.WebHook.KeyPath, nil)
 		if err != nil {
 			logrus.Println(err)
 		}
 	} else {
-		err := http.ListenAndServe("0.0.0.0:"+conf.webHook.port, nil)
+		err := http.ListenAndServe("0.0.0.0:"+conf.WebHook.Port, nil)
 		if err != nil {
 			logrus.Println(err)
 		}
 	}
 }
 
-func getUpdateCh() (tgbotapi.UpdatesChannel, error) {
-	if conf.webHook.domain != "" {
-		return bot.ListenForWebhook(conf.webHook.path), nil
-	} else {
-		return bot.GetUpdatesChan(tgbotapi.UpdateConfig{
-			Offset:  0,
-			Timeout: 0,
-		})
+func (m *MyBot) getUpdateCh(conf config) (tgbotapi.UpdatesChannel, error) {
+	if conf.WebHook.Domain != "" {
+		return m.bot.ListenForWebhook(conf.WebHook.Path), nil
 	}
+	return m.bot.GetUpdatesChan(tgbotapi.UpdateConfig{
+		Offset:  0,
+		Timeout: 0,
+	})
 }

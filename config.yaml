@@ -1,0 +1,8 @@
+botToken: "1266007673:AAFWpGZuWCvvoLgxTdMWPiR4uHGB6kOwRe4"
+webHook:
+  domain: ""
+  path: ""
+  port: ""
+  withCert: false
+  certPath: ""
+  keypath: ""
