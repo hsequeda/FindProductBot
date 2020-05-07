@@ -155,18 +155,18 @@ func (m MyBot) sendInstructions(chatId int64) {
 			" Usted puede cambiar la provincia cuando desee. La provincia que seleccione es en la cual se "+
 			"realizaran las busquedas.\n\n"+
 			"<b>Modos de uso:</b>\n"+
-			"1- Privado(El chat privado con el bot): En este modo usted va a tener acceso al comando /buscar 'Producto'"+
+			"1- <i>Privado</i>(El chat privado con el bot): En este modo usted va a tener acceso al comando /buscar 'Producto'"+
 			"para buscar un producto, tambien puede hacerlo escribiendo en el chat privado lo que quiere buscar."+
 			"Ademas va a tener a disposicion un listado de botones que le haran la vida mas facil☺️ brindandole"+
 			" las opciones de:\n"+
-			"1. Cambiar o añadir su provincia. \n"+
-			"2. Mostrar esta ayuda para si se olvida de algo. \n"+
-			"3. Ver su perfil donde vera su usuario con la provincia que tiene vinculada.\n"+
-			"4. Subscribirse a un patron de busqueda para notificarle cuando encontremos algo.(Pendiente)\n"+
-			"2- Publico( Añadiendo el bot a un grupo para uso publico): En este modo usted va a tener acceso al comando"+
+			"\t1. Cambiar o añadir su provincia. \n"+
+			"\t2. Mostrar esta ayuda para si se olvida de algo. \n"+
+			"\t3. Ver su perfil donde vera su usuario con la provincia que tiene vinculada.\n"+
+			"\t4. Subscribirse a un patron de busqueda para notificarle cuando encontremos algo.(En desarrollo)\n"+
+			"2- <i>Publico</i>( Añadiendo el bot a un grupo para uso publico): En este modo usted va a tener acceso al comando"+
 			"'/buscar', si no ha iniciado una conversacion con el bot y le hace un pedido se le mostrara un boton de enlace"+
 			"para realizar esta tarea.\n"+
-			"3- Inline: A este modo se accede escribiendo '@buscarTuEnvioBot 'patron a buscar'. Puede acceder a este modo desde"+
+			"3- <i>Inline</i>: A este modo se accede escribiendo '@buscarTuEnvioBot \"patron a buscar\"'. Puede acceder a este modo desde"+
 			"cualquier parte de telegram, lo mismo un grupo como un chat privado, cuando escriba un patron tiene que esperar"+
 			"unos segundos para que se realice el pedido asi que uselo con calma.",
 	)
