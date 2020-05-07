@@ -16,6 +16,7 @@ type webHookData struct {
 
 type config struct {
 	BotToken string
+	BotName  string
 	WebHook  webHookData
 }
 

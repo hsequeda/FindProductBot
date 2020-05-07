@@ -102,7 +102,7 @@ func (m MyBot) sendQueryResultList(list []products.Product, inlineQueryID string
 	}
 }
 
-func sendResultMessage(chatId int64, productList []products.Product) {
+func (m MyBot) sendResultMessage(chatId int64, productList []products.Product) {
 	for _, prod := range productList {
 		rawMsg := fmt.Sprintf(
 			`
@@ -114,35 +114,35 @@ func sendResultMessage(chatId int64, productList []products.Product) {
 
 		msg := tgbotapi.NewMessage(chatId, rawMsg)
 		msg.ParseMode = "html"
-		_, err := bot.Send(msg)
+		_, err := m.bot.Send(msg)
 		if err != nil {
 			logrus.Warn(err)
 		}
 	}
 }
 
-func sendProvinceNotSelectError(chatId int64) {
+func (m MyBot) sendProvinceNotSelectError(chatId int64) {
 	msg := tgbotapi.NewMessage(chatId, "❌ Necesita seleccionar una provincia.")
 	msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonURL("Seleccionar provincia!", "https://t.me/buscarTuEnvioBot?start=start"),
+			tgbotapi.NewInlineKeyboardButtonURL("Seleccionar provincia!", fmt.Sprintf("https://t.me/%s?start=start", m.botName)),
 		),
 	)
-	_, err := bot.Send(msg)
+	_, err := m.bot.Send(msg)
 	if err != nil {
 		logrus.Warn(err)
 	}
 }
 
-func sendInsertCommandValidError(chatId int64) {
+func (m MyBot) sendInsertCommandValidError(chatId int64) {
 	msg := tgbotapi.NewMessage(chatId, "❌ Inserte un comando valido.")
-	_, err := bot.Send(msg)
+	_, err := m.bot.Send(msg)
 	if err != nil {
 		logrus.Warn(err)
 	}
 }
 
-func sendInstructions(chatId int64) {
+func (m MyBot) sendInstructions(chatId int64) {
 	msg := tgbotapi.NewMessage(chatId,
 		`Este bot te ayuda a encontrar 🔍 productos en las tiendas virtuales.
 			 Hasta ahora abarca todas las tiendas de <a href="https://www.tuenvio.cu">Tu Envio</a> y la tienda de
@@ -168,7 +168,7 @@ func sendInstructions(chatId int64) {
 			`,
 	)
 	msg.ParseMode = "html"
-	_, err := bot.Send(msg)
+	_, err := m.bot.Send(msg)
 	if err != nil {
 		logrus.Warn(err)
 	}

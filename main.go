@@ -8,8 +8,9 @@ import (
 )
 
 type MyBot struct {
-	bot    *tgbotapi.BotAPI
-	client *httpClient.Client
+	botName string
+	bot     *tgbotapi.BotAPI
+	client  *httpClient.Client
 }
 
 func main() {
@@ -90,6 +91,8 @@ func initBot(conf config) MyBot {
 	if info.LastErrorDate != 0 {
 		logrus.Printf("[Telegram callback failed]%s", info.LastErrorMessage)
 	}
+
+	mBot.botName = conf.BotName
 	return mBot
 }
 
