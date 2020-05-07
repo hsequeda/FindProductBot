@@ -43,6 +43,9 @@ func (m MyBot) sendInlineKeyboardSelectProvince(chatId int64) {
 			tgbotapi.NewInlineKeyboardButtonData("Guantanamo", "Guantanamo"),
 			tgbotapi.NewInlineKeyboardButtonData("La Isla", "La Isla"),
 		),
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("Holguin", "Holguin"),
+		),
 	)
 	msg.ReplyMarkup = markup
 	_, err := m.bot.Send(msg)
