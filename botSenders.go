@@ -81,45 +81,49 @@ func (m MyBot) sendQueryResultList(list []products.Product, inlineQueryID string
 	var resultList = make([]interface{}, 0)
 
 	for _, prod := range list {
-		msg := fmt.Sprintf(
-			`
+		if prod.IsAvailable() {
+			msg := fmt.Sprintf(
+				`
 		<b>Producto: %s</b>,
 		<b>Precio: %s</b>,
 		<b>Tienda: %s</b>,
 		<a href="%s">Ver Producto</a>,
 `, prod.GetName(), prod.GetPrice(), prod.GetStore(), prod.GetLink())
 
-		inlineQueryResult := tgbotapi.NewInlineQueryResultArticleHTML(uuid.New().String(),
-			fmt.Sprintf("%s - %s", prod.GetName(), prod.GetStore()), msg)
+			inlineQueryResult := tgbotapi.NewInlineQueryResultArticleHTML(uuid.New().String(),
+				fmt.Sprintf("%s - %s", prod.GetName(), prod.GetStore()), msg)
 
-		resultList = append(resultList, inlineQueryResult)
-	}
+			resultList = append(resultList, inlineQueryResult)
+		}
 
-	_, err := m.bot.AnswerInlineQuery(tgbotapi.InlineConfig{
-		InlineQueryID: inlineQueryID,
-		Results:       resultList,
-		CacheTime:     10000,
-	})
-	if err != nil {
-		logrus.Warn(err)
+		_, err := m.bot.AnswerInlineQuery(tgbotapi.InlineConfig{
+			InlineQueryID: inlineQueryID,
+			Results:       resultList,
+			CacheTime:     10000,
+		})
+		if err != nil {
+			logrus.Warn(err)
+		}
 	}
 }
 
 func (m MyBot) sendResultMessage(chatId int64, productList []products.Product) {
 	for _, prod := range productList {
-		rawMsg := fmt.Sprintf(
-			`
+		if prod.IsAvailable() {
+			rawMsg := fmt.Sprintf(
+				`
 		<b>Producto: %s</b>,
 		<b>Precio: %s</b>,
 		<b>Tienda: %s</b>,
 		<a href="%s">Ver Producto</a>,
 `, prod.GetName(), prod.GetPrice(), prod.GetStore(), prod.GetLink())
 
-		msg := tgbotapi.NewMessage(chatId, rawMsg)
-		msg.ParseMode = "html"
-		_, err := m.bot.Send(msg)
-		if err != nil {
-			logrus.Warn(err)
+			msg := tgbotapi.NewMessage(chatId, rawMsg)
+			msg.ParseMode = "html"
+			_, err := m.bot.Send(msg)
+			if err != nil {
+				logrus.Warn(err)
+			}
 		}
 	}
 }
