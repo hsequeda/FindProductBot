@@ -1,0 +1,8 @@
+version: '3'
+services:
+  redisearch:      
+    image: redislabs/redisearch
+    restart: always
+    # command: bundle exec redis-cli
+    ports:
+      - "6379:6379"
