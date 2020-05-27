@@ -1,16 +1,17 @@
 package main
 
 import (
-	httpClient "findTuEnvioBot/client"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/sirupsen/logrus"
+	cpf "github.com/stdevHsequeda/CubanProductFinder"
 	"net/http"
 )
 
 type MyBot struct {
 	botName string
 	bot     *tgbotapi.BotAPI
-	client  *httpClient.Client
+	// client  *httpClient.Client
+	sc *cpf.StoreClient
 }
 
 func main() {
@@ -61,7 +62,9 @@ func initBot(conf config) MyBot {
 	logrus.Print(u)
 
 	bot.Debug = true
-	mBot := MyBot{bot: bot, client: httpClient.NewClient(), botName: conf.BotName}
+	mBot := MyBot{bot: bot, botName: conf.BotName}
+	mBot.sc = cpf.NewStoreClient()
+	mBot.sc.Start()
 	if conf.WebHook.Domain == "" {
 		return mBot
 	}

@@ -1,11 +1,11 @@
 package main
 
 import (
-	"findTuEnvioBot/products"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	storeClient "github.com/stdevHsequeda/CubanProductFinder"
 	"strconv"
 	"strings"
 )
@@ -59,16 +59,21 @@ func (m MyBot) handlePublicMessage(message *tgbotapi.Message) {
 				pattern = strings.Join(splitText[1:], " ")
 			}
 
-			for _, store := range provinces[user.Province] {
-				prods, err := m.GetProductsByPattern(store.rawName, pattern)
-				if err != nil {
-					logrus.Print(err)
-				}
+			prods, err := m.sc.SearchProduct(pattern)
+			if err != nil {
+				logrus.Print(err)
+			}
 
-				if prods != nil {
-					m.sendResultMessage(message.Chat.ID, prods)
+			var results = make([]storeClient.Product, 0)
+			for _, store := range provinces[user.Province] {
+				for i := range prods {
+					if prods[i].GetSection().GetStore().Name == store.name {
+						results = append(results, prods[i])
+					}
 				}
 			}
+
+			m.sendResultMessage(message.Chat.ID, prods)
 		}
 
 	case strings.Split(message.Text, " ")[0] == "/subscribirme":
@@ -110,16 +115,21 @@ func (m MyBot) handlePrivateMessage(privateMsg *tgbotapi.Message) {
 					pattern = strings.Join(splitText[1:], " ")
 				}
 
-				for _, store := range provinces[user.Province] {
-					prods, err := m.GetProductsByPattern(store.rawName, pattern)
-					if err != nil {
-						logrus.Print(err)
-					}
+				prods, err := m.sc.SearchProduct(pattern)
+				if err != nil {
+					logrus.Print(err)
+				}
 
-					if prods != nil {
-						m.sendResultMessage(privateMsg.Chat.ID, prods)
+				var results = make([]storeClient.Product, 0)
+				for _, store := range provinces[user.Province] {
+					for i := range prods {
+						if prods[i].GetSection().GetStore().Name == store.name {
+							results = append(results, prods[i])
+						}
 					}
 				}
+
+				m.sendResultMessage(privateMsg.Chat.ID, prods)
 			}
 
 		case strings.Split(privateMsg.Text, " ")[0] == "/subscribirme":
@@ -171,16 +181,21 @@ func (m MyBot) handlePrivateMessage(privateMsg *tgbotapi.Message) {
 			logrus.Warn(err)
 			return
 		default:
-			for _, store := range provinces[user.Province] {
-				prods, err := m.GetProductsByPattern(store.rawName, privateMsg.Text)
-				if err != nil {
-					logrus.Print(err)
-				}
+			prods, err := m.sc.SearchProduct(privateMsg.Text)
+			if err != nil {
+				logrus.Print(err)
+			}
 
-				if prods != nil {
-					m.sendResultMessage(privateMsg.Chat.ID, prods)
+			var results = make([]storeClient.Product, 0)
+			for _, store := range provinces[user.Province] {
+				for i := range prods {
+					if prods[i].GetSection().GetStore().Name == store.name {
+						results = append(results, prods[i])
+					}
 				}
 			}
+
+			m.sendResultMessage(privateMsg.Chat.ID, prods)
 		}
 	}
 }
@@ -209,17 +224,23 @@ func (m MyBot) handleInlineQuery(query *tgbotapi.InlineQuery) {
 			logrus.Warn(err)
 			return
 		default:
-
-			var productList = make([]products.Product, 0)
-			for _, store := range provinces[user.Province] {
-				prods, err := m.GetProductsByPattern(store.rawName, query.Query)
-				if err != nil {
-					logrus.Print(err)
-				}
-
-				productList = append(productList, prods...)
+			prods, err := m.sc.SearchProduct(query.Query)
+			if err != nil {
+				logrus.Print(err)
 			}
-			m.sendQueryResultList(productList, query.ID)
+
+			var results = make([]storeClient.Product, 0)
+			for _, store := range provinces[user.Province] {
+				for i := range prods {
+					if prods[i].GetSection().GetStore().Name == store.name {
+						results = append(results, prods[i])
+					}
+				}
+			}
+
+			if len(prods) >= 1 {
+				m.sendQueryResultList(prods, query.ID)
+			}
 		}
 	}
 }

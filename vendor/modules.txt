@@ -1,5 +1,4 @@
-# github.com/andybalholm/cascadia v1.1.0
-## explicit
+# github.com/andybalholm/cascadia v1.2.0
 github.com/andybalholm/cascadia
 # github.com/boltdb/bolt v1.3.1
 ## explicit
@@ -11,6 +10,8 @@ github.com/fsnotify/fsnotify
 # github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 ## explicit
 github.com/go-telegram-bot-api/telegram-bot-api
+# github.com/gomodule/redigo v1.8.1
+github.com/gomodule/redigo/redis
 # github.com/google/uuid v1.1.1
 ## explicit
 github.com/google/uuid
@@ -56,6 +57,10 @@ github.com/spf13/pflag
 # github.com/spf13/viper v1.6.3
 ## explicit
 github.com/spf13/viper
+# github.com/stdevHsequeda/CubanProductFinder v0.0.0-20200527205753-4f063e2a7fbb
+## explicit
+github.com/stdevHsequeda/CubanProductFinder
+github.com/stdevHsequeda/CubanProductFinder/client
 # github.com/stretchr/testify v1.5.1
 ## explicit
 github.com/stretchr/testify/assert

@@ -1,11 +1,11 @@
 package main
 
 import (
-	"findTuEnvioBot/products"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	storeClient "github.com/stdevHsequeda/CubanProductFinder"
 )
 
 func (m MyBot) sendInlineKeyboardSelectProvince(chatId int64) {
@@ -77,24 +77,22 @@ func (m MyBot) sendUserPanel(chatId int64, text string) {
 	}
 }
 
-func (m MyBot) sendQueryResultList(list []products.Product, inlineQueryID string) {
+func (m MyBot) sendQueryResultList(list []storeClient.Product, inlineQueryID string) {
 	var resultList = make([]interface{}, 0)
 
 	for _, prod := range list {
-		if prod.IsAvailable() {
-			msg := fmt.Sprintf(
-				`
+		msg := fmt.Sprintf(
+			`
 		<b>Producto: %s</b>,
 		<b>Precio: %s</b>,
 		<b>Tienda: %s</b>,
 		<a href="%s">Ver Producto</a>,
-`, prod.GetName(), prod.GetPrice(), prod.GetStore(), prod.GetLink())
+`, prod.GetName(), prod.GetPrice(), prod.GetSection().GetStore().Name, prod.GetLink())
 
-			inlineQueryResult := tgbotapi.NewInlineQueryResultArticleHTML(uuid.New().String(),
-				fmt.Sprintf("%s - %s", prod.GetName(), prod.GetStore()), msg)
+		inlineQueryResult := tgbotapi.NewInlineQueryResultArticleHTML(uuid.New().String(),
+			fmt.Sprintf("%s - %s", prod.GetName(), prod.GetSection().GetStore().Name), msg)
 
-			resultList = append(resultList, inlineQueryResult)
-		}
+		resultList = append(resultList, inlineQueryResult)
 
 		_, err := m.bot.AnswerInlineQuery(tgbotapi.InlineConfig{
 			InlineQueryID: inlineQueryID,
@@ -107,23 +105,30 @@ func (m MyBot) sendQueryResultList(list []products.Product, inlineQueryID string
 	}
 }
 
-func (m MyBot) sendResultMessage(chatId int64, productList []products.Product) {
+func (m MyBot) sendResultMessage(chatId int64, productList []storeClient.Product) {
+	if len(productList) == 0 {
+		msg := tgbotapi.NewMessage(chatId, `No se encontraron productos.😥`)
+		_, err := m.bot.Send(msg)
+		if err != nil {
+			logrus.Warn(err)
+		}
+		return
+	}
+
 	for _, prod := range productList {
-		if prod.IsAvailable() {
-			rawMsg := fmt.Sprintf(
-				`
+		rawMsg := fmt.Sprintf(
+			`
 		<b>Producto: %s</b>,
 		<b>Precio: %s</b>,
 		<b>Tienda: %s</b>,
 		<a href="%s">Ver Producto</a>,
-`, prod.GetName(), prod.GetPrice(), prod.GetStore(), prod.GetLink())
+`, prod.GetName(), prod.GetPrice(), prod.GetSection().GetStore().Name, prod.GetLink())
 
-			msg := tgbotapi.NewMessage(chatId, rawMsg)
-			msg.ParseMode = "html"
-			_, err := m.bot.Send(msg)
-			if err != nil {
-				logrus.Warn(err)
-			}
+		msg := tgbotapi.NewMessage(chatId, rawMsg)
+		msg.ParseMode = "html"
+		_, err := m.bot.Send(msg)
+		if err != nil {
+			logrus.Warn(err)
 		}
 	}
 }
