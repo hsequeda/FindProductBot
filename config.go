@@ -14,10 +14,16 @@ type webHookData struct {
 	KeyPath  string
 }
 
+type CacheData struct {
+	Network string // Ex: 'tcp'
+	Address string
+}
+
 type config struct {
 	BotToken string
 	BotName  string
 	WebHook  webHookData
+	Cache    CacheData
 }
 
 func initConfig() (config, error) {

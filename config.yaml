@@ -7,3 +7,6 @@ webHook:
   withCert: false
   certPath: ""
   keypath: ""
+cache:
+  network: "tcp"
+  address: "localhost:6379"

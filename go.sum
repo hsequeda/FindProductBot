@@ -118,6 +118,10 @@ github.com/stdevHsequeda/CubanProductFinder v0.0.0-20200524124310-4765b0367b58 h
 github.com/stdevHsequeda/CubanProductFinder v0.0.0-20200524124310-4765b0367b58/go.mod h1:N11mcu6OeTqJEGsJe3mC94u29fYMVAU30UWN3VJcFJw=
 github.com/stdevHsequeda/CubanProductFinder v0.0.0-20200527205753-4f063e2a7fbb h1:NhRTbtqLVQ+f5oEnDGwi1zRMTHMP/Hk1Ophm0zfNEIs=
 github.com/stdevHsequeda/CubanProductFinder v0.0.0-20200527205753-4f063e2a7fbb/go.mod h1:My9oLl4lny90ebbWGJeGw2QZA6MqiOF5D3KWx5G3AZM=
+github.com/stdevHsequeda/CubanProductFinder v0.0.0-20200601223014-fdd92f3e166a h1:VGGn++AtPTJ3ZACzZnl57eKwsx3Rovj7y7bphTSct4U=
+github.com/stdevHsequeda/CubanProductFinder v0.0.0-20200601223014-fdd92f3e166a/go.mod h1:My9oLl4lny90ebbWGJeGw2QZA6MqiOF5D3KWx5G3AZM=
+github.com/stdevHsequeda/CubanProductFinder v0.0.0-20200601223808-d07f50b8b293 h1:SE9SSK8iVO2WdWErgWK2lHF9hAS7LA8QqKkDPM9mP6M=
+github.com/stdevHsequeda/CubanProductFinder v0.0.0-20200601223808-d07f50b8b293/go.mod h1:My9oLl4lny90ebbWGJeGw2QZA6MqiOF5D3KWx5G3AZM=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
