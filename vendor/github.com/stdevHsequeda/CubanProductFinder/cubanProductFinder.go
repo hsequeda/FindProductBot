@@ -22,10 +22,20 @@ type StoreClient struct {
 	cache  *Cache             // Cache data
 }
 
-func NewStoreClient() *StoreClient {
+func NewStoreClient(redisNetwork, redisAddr string) (*StoreClient, error) {
 	// Init all attribs
 	httpClient.MaxRetry = 5
-	return &StoreClient{client: httpClient.NewClient(), pool: NewPool(runtime.NumCPU()), cache: NewCache()}
+
+   cache, err:= NewCache(redisNetwork, redisAddr)
+   if err!=nil{
+      return nil, err
+   }
+
+	return &StoreClient{
+      client: httpClient.NewClient(),
+      pool: NewPool(runtime.NumCPU()),
+      cache: cache,
+   }, nil
 }
 
 func (sc *StoreClient) Start() {

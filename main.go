@@ -63,7 +63,10 @@ func initBot(conf config) MyBot {
 
 	bot.Debug = true
 	mBot := MyBot{bot: bot, botName: conf.BotName}
-	mBot.sc = cpf.NewStoreClient()
+	mBot.sc, err = cpf.NewStoreClient(conf.Cache.Network, conf.Cache.Address)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 	mBot.sc.Start()
 	if conf.WebHook.Domain == "" {
 		return mBot

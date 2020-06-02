@@ -13,26 +13,28 @@ type Cache struct {
 	pool *redis.Pool
 }
 
-func NewCache() *Cache {
+func NewCache(network, address string) (*Cache, error) {
 	pool := redis.Pool{
-		MaxIdle:     10,
-		IdleTimeout: 240 * time.Second,
+		MaxIdle:     5,
+		IdleTimeout: 60 * time.Second,
+      Wait: true,
 		Dial: func() (conn redis.Conn, err error) {
-			return redis.Dial("tcp", "localhost:6379")
+			return redis.Dial(network,address)
 		},
 	}
+
 	conn := pool.Get()
 
 	defer conn.Close()
 
 	err := conn.Send("MULTI")
 	if err != nil {
-		logrus.Fatal(err)
+      return nil, err
 	}
 
 	_, err = conn.Do("FLUSHALL")
 	if err != nil {
-		logrus.Fatal(err)
+      return nil, err
 	}
 
 	err = conn.Send(
@@ -43,7 +45,7 @@ func NewCache() *Cache {
 		"store", "TEXT", "NOINDEX",
 		"timestamp", "NUMERIC", "NOINDEX")
 	if err != nil {
-		logrus.Fatal(err)
+      return nil, err
 	}
 
 	err = conn.Send("EXEC")
@@ -51,7 +53,7 @@ func NewCache() *Cache {
 		logrus.Fatal(err)
 	}
 
-	return &Cache{pool: &pool}
+	return &Cache{pool: &pool}, nil
 }
 
 func (c Cache) AddProduct(product Product) error {
